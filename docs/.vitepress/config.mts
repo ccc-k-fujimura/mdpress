@@ -24,6 +24,27 @@ function getSidebarItems(dir: string, basePath: string = ''): any[] {
     }
   }
 
+  // サブディレクトリを再帰的に走査
+  for (const entry of entries) {
+    if (entry.isDirectory() && !entry.name.startsWith('.')) {
+      const subItems = getSidebarItems(`${dir}/${entry.name}`, `${basePath}/${entry.name}`)
+      if (subItems.length > 0) {
+        const indexPath = path.join(fullPath, entry.name, 'index.md')
+        let groupTitle = entry.name
+        if (fs.existsSync(indexPath)) {
+          const content = fs.readFileSync(indexPath, 'utf-8')
+          const titleMatch = content.match(/^#\s+(.+)$/m)
+          if (titleMatch) groupTitle = titleMatch[1]
+        }
+        items.push({
+          text: groupTitle,
+          collapsed: false,
+          items: subItems,
+        })
+      }
+    }
+  }
+
   return items
 }
 
@@ -67,6 +88,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'CesiumJS', link: '/cesiumjs/' },
+      { text: 'DDIA', link: '/ddia/' },
     ],
 
     sidebar: getAutoSidebar(),
